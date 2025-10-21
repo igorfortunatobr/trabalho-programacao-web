@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Controle Financeiro{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h2>Dashboard - {{ month_name|title }} de {{ year }}</h2>
+    </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="row mt-4">
+    <div class="col-md-4">
+        <div class="card text-white bg-success mb-3">
+            <div class="card-header">Receitas</div>
+            <div class="card-body">
+                <h5 class="card-title">R$ {{ summary.income|floatformat:2 }}</h5>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-white bg-danger mb-3">
+            <div class="card-header">Despesas</div>
+            <div class="card-body">
+                <h5 class="card-title">R$ {{ summary.expense|floatformat:2 }}</h5>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-white {% if summary.balance >= 0 %}bg-primary{% else %}bg-warning{% endif %} mb-3">
+            <div class="card-header">Saldo</div>
+            <div class="card-body">
+                <h5 class="card-title">R$ {{ summary.balance|floatformat:2 }}</h5>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts -->
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Totais por Categoria</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="categoryChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Saldo Acumulado Diário</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="dailyBalanceChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Prepare data for charts
+    // Convert Python data to JavaScript
+    const categoryData = JSON.parse('{{ category_totals|escapejs }}');
+    const dailyData = JSON.parse('{{ daily_balance|escapejs }}');
+    
+    // Extract labels and values for category chart
+    const categoryLabels = Object.keys(categoryData);
+    const categoryValues = Object.values(categoryData);
+    
+    // Extract dates and balances for daily balance chart
+    const dailyDates = dailyData.map(item => item.date);
+    const dailyBalances = dailyData.map(item => item.balance);
+
+    // Category Chart
+    const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+    const categoryChart = new Chart(categoryCtx, {
+        type: 'bar',
+        data: {
+            labels: categoryLabels,
+            datasets: [{
+                label: 'Valor',
+                data: categoryValues,
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.2)',
+                    'rgba(54, 162, 235, 0.2)',
+                    'rgba(255, 205, 86, 0.2)',
+                    'rgba(75, 192, 192, 0.2)',
+                    'rgba(153, 102, 255, 0.2)',
+                    'rgba(255, 159, 64, 0.2)'
+                ],
+                borderColor: [
+                    'rgb(255, 99, 132)',
+                    'rgb(54, 162, 235)',
+                    'rgb(255, 205, 86)',
+                    'rgb(75, 192, 192)',
+                    'rgb(153, 102, 255)',
+                    'rgb(255, 159, 64)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    // Daily Balance Chart
+    const dailyBalanceCtx = document.getElementById('dailyBalanceChart').getContext('2d');
+    const dailyBalanceChart = new Chart(dailyBalanceCtx, {
+        type: 'line',
+        data: {
+            labels: dailyDates,
+            datasets: [{
+                label: 'Saldo Acumulado',
+                data: dailyBalances,
+                fill: false,
+                borderColor: 'rgb(75, 192, 192)',
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}
