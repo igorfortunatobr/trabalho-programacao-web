@@ -1,0 +1,208 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if object %}Editar{% else %}Nova{% endif %} Transação - Controle Financeiro{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h2>{% if object %}Editar{% else %}Nova{% endif %} Transação</h2>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <form method="post" id="transactionForm">
+                    {% csrf_token %}
+                    
+                    <!-- Transaction Form -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="{{ form.description.id_for_label }}" class="form-label">Descrição</label>
+                            {{ form.description }}
+                            {% if form.description.errors %}
+                                <div class="text-danger">{{ form.description.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label for="{{ form.date.id_for_label }}" class="form-label">Data</label>
+                            {{ form.date }}
+                            {% if form.date.errors %}
+                                <div class="text-danger">{{ form.date.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Transaction Items Formset -->
+                    <h4>Itens da Transação</h4>
+                    {{ formset.management_form }}
+                    
+                    <div class="table-responsive">
+                        <table class="table table-striped" id="itemTable">
+                            <thead>
+                                <tr>
+                                    <th>Categoria</th>
+                                    <th>Valor</th>
+                                    <th>Excluir</th>
+                                </tr>
+                            </thead>
+                            <tbody id="itemFormset">
+                                {% for item_form in formset %}
+                                    <tr class="item-form">
+                                        {% for hidden in item_form.hidden_fields %}
+                                            {{ hidden }}
+                                        {% endfor %}
+                                        <td>
+                                            {{ item_form.category }}
+                                            {% if item_form.category.errors %}
+                                                <div class="text-danger">{{ item_form.category.errors }}</div>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {{ item_form.amount }}
+                                            {% if item_form.amount.errors %}
+                                                <div class="text-danger">{{ item_form.amount.errors }}</div>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {{ item_form.DELETE }}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <button type="button" id="addItem" class="btn btn-outline-secondary">Adicionar Item</button>
+                    </div>
+                    
+                    <!-- Total Amount -->
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <div class="alert alert-info">
+                                <strong>Total da Transação: R$ <span id="totalAmount">0.00</span></strong>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Form Errors -->
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+                    {% endif %}
+                    
+                    <!-- Buttons -->
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'transaction_list' %}" class="btn btn-secondary">Cancelar</a>
+                        <button type="submit" class="btn btn-primary">Salvar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Calculate total amount in real time
+    function calculateTotal() {
+        let total = 0;
+        const rows = document.querySelectorAll('.item-form');
+        
+        rows.forEach(row => {
+            const categorySelect = row.querySelector('select');
+            const amountInput = row.querySelectorAll('input[type="number"]')[0];
+            const deleteCheckbox = row.querySelector('input[type="checkbox"]');
+            
+            // Skip if marked for deletion
+            if (deleteCheckbox && deleteCheckbox.checked) {
+                return;
+            }
+            
+            const categoryType = categorySelect.options[categorySelect.selectedIndex].text.includes('Despesa') ? 'expense' : 'income';
+            const amount = parseFloat(amountInput.value) || 0;
+            
+            if (categoryType === 'income') {
+                total += amount;
+            } else {
+                total -= amount;
+            }
+        });
+        
+        document.getElementById('totalAmount').textContent = total.toFixed(2);
+    }
+    
+    // Add event listeners to form elements
+    document.addEventListener('DOMContentLoaded', function() {
+        // Calculate total on page load
+        calculateTotal();
+        
+        // Add event listeners to existing form elements
+        const amountInputs = document.querySelectorAll('input[type="number"]');
+        const categorySelects = document.querySelectorAll('select');
+        const deleteCheckboxes = document.querySelectorAll('input[type="checkbox"]');
+        
+        amountInputs.forEach(input => {
+            input.addEventListener('input', calculateTotal);
+        });
+        
+        categorySelects.forEach(select => {
+            select.addEventListener('change', calculateTotal);
+        });
+        
+        deleteCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', calculateTotal);
+        });
+        
+        // Add new item functionality
+        document.getElementById('addItem').addEventListener('click', function() {
+            const formset = document.getElementById('itemFormset');
+            const totalForms = document.getElementById('id_items-TOTAL_FORMS');
+            const formNum = parseInt(totalForms.value);
+            
+            // Clone the first form row as template
+            const templateRow = document.querySelector('.item-form');
+            if (templateRow) {
+                const newRow = templateRow.cloneNode(true);
+                
+                // Update form fields with new form number
+                const inputs = newRow.querySelectorAll('input, select');
+                inputs.forEach(input => {
+                    if (input.name) {
+                        input.name = input.name.replace('-0-', `-${formNum}-`);
+                    }
+                    if (input.id) {
+                        input.id = input.id.replace('_0_', `_${formNum}_`);
+                    }
+                    // Clear input values
+                    if (input.type === 'text' || input.type === 'number') {
+                        input.value = '';
+                    } else if (input.type === 'checkbox') {
+                        input.checked = false;
+                    } else if (input.tagName === 'SELECT') {
+                        input.selectedIndex = 0;
+                    }
+                });
+                
+                // Add event listeners to new elements
+                const newAmountInput = newRow.querySelector('input[type="number"]');
+                const newCategorySelect = newRow.querySelector('select');
+                const newDeleteCheckbox = newRow.querySelector('input[type="checkbox"]');
+                
+                if (newAmountInput) {
+                    newAmountInput.addEventListener('input', calculateTotal);
+                }
+                if (newCategorySelect) {
+                    newCategorySelect.addEventListener('change', calculateTotal);
+                }
+                if (newDeleteCheckbox) {
+                    newDeleteCheckbox.addEventListener('change', calculateTotal);
+                }
+                
+                formset.appendChild(newRow);
+                totalForms.value = formNum + 1;
+            }
+        });
+    });
+</script>
+{% endblock %}

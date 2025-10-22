@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+
+{% block title %}Transações - Controle Financeiro{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2>Transações</h2>
+            <a href="{% url 'transaction_create' %}" class="btn btn-primary">Nova Transação</a>
+        </div>
+    </div>
+</div>
+
+<!-- Filter Form -->
+<div class="row mb-3">
+    <div class="col-md-12">
+        <form method="get" class="row g-3">
+            <div class="col-md-3">
+                <input type="text" name="search" class="form-control" placeholder="Buscar por descrição..." value="{{ request.GET.search }}">
+            </div>
+            <div class="col-md-2">
+                <input type="date" name="start_date" class="form-control" placeholder="Data inicial" value="{{ request.GET.start_date }}">
+            </div>
+            <div class="col-md-2">
+                <input type="date" name="end_date" class="form-control" placeholder="Data final" value="{{ request.GET.end_date }}">
+            </div>
+            <div class="col-md-2">
+                <select name="type" class="form-select">
+                    <option value="">Todos os tipos</option>
+                    <option value="INCOME" {% if request.GET.type == 'INCOME' %}selected{% endif %}>Receitas</option>
+                    <option value="EXPENSE" {% if request.GET.type == 'EXPENSE' %}selected{% endif %}>Despesas</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <div class="btn-group" role="group">
+                    <button class="btn btn-outline-secondary" type="submit">Filtrar</button>
+                    <a href="{% url 'transaction_list' %}" class="btn btn-outline-secondary">Limpar</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Transactions Table -->
+<div class="row">
+    <div class="col-md-12">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>Descrição</th>
+                        <th>Data</th>
+                        <th>Valor Total</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for transaction in transactions %}
+                    <tr>
+                        <td>{{ transaction.description }}</td>
+                        <td>{{ transaction.date|date:"d/m/Y" }}</td>
+                        <td>
+                            {% if transaction.total_amount >= 0 %}
+                                <span class="text-success">R$ {{ transaction.total_amount|floatformat:2 }}</span>
+                            {% else %}
+                                <span class="text-danger">R$ {{ transaction.total_amount|floatformat:2 }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'transaction_detail' transaction.pk %}" class="btn btn-sm btn-outline-info">Detalhes</a>
+                            <a href="{% url 'transaction_update' transaction.pk %}" class="btn btn-sm btn-outline-primary">Editar</a>
+                            <a href="{% url 'transaction_delete' transaction.pk %}" class="btn btn-sm btn-outline-danger">Excluir</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center">Nenhuma transação encontrada.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Pagination -->
+{% if is_paginated %}
+<div class="row">
+    <div class="col-md-12">
+        <nav aria-label="Navegação da página">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.start_date %}&start_date={{ request.GET.start_date }}{% endif %}{% if request.GET.end_date %}&end_date={{ request.GET.end_date }}{% endif %}{% if request.GET.type %}&type={{ request.GET.type }}{% endif %}">Primeira</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.start_date %}&start_date={{ request.GET.start_date }}{% endif %}{% if request.GET.end_date %}&end_date={{ request.GET.end_date }}{% endif %}{% if request.GET.type %}&type={{ request.GET.type }}{% endif %}">Anterior</a>
+                    </li>
+                {% endif %}
+
+                <li class="page-item active">
+                    <span class="page-link">
+                        Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                    </span>
+                </li>
+
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.start_date %}&start_date={{ request.GET.start_date }}{% endif %}{% if request.GET.end_date %}&end_date={{ request.GET.end_date }}{% endif %}{% if request.GET.type %}&type={{ request.GET.type }}{% endif %}">Próxima</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.start_date %}&start_date={{ request.GET.start_date }}{% endif %}{% if request.GET.end_date %}&end_date={{ request.GET.end_date }}{% endif %}{% if request.GET.type %}&type={{ request.GET.type }}{% endif %}">Última</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

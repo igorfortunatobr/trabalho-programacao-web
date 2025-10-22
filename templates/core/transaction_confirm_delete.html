@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block title %}Excluir Transação - Controle Financeiro{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h2>Excluir Transação</h2>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <p>Você tem certeza que deseja excluir a transação <strong>"{{ object.description }}"</strong> do dia {{ object.date|date:"d/m/Y" }}?</p>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'transaction_list' %}" class="btn btn-secondary">Cancelar</a>
+                        <button type="submit" class="btn btn-danger">Excluir</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
