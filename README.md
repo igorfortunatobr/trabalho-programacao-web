@@ -2,6 +2,12 @@
 
 Sistema de controle financeiro pessoal desenvolvido com Django, permitindo o gerenciamento de receitas e despesas com categorias, transações e dashboard com gráficos.
 
+## Membros
+
+- IGOR ABREU FORTUNATO
+- MARCOS VINICIUS PAIVA CARVALHAR
+- PEDRO HENRIQUE SANTANA QUINTILIANO
+
 ## Funcionalidades
 
 - Cadastro e autenticação de usuários
