@@ -11,7 +11,6 @@ from .models import Category, Transaction, TransactionItem
 from .forms import TransactionForm, TransactionItemFormSet
 from .services import get_month_summary, get_category_totals, get_daily_balance_series
 import calendar
-from django.db.models import Sum, Q
 
 
 def home(request):
@@ -241,6 +240,12 @@ def dashboard(request):
     year = today.year
     month = today.month
     
+    # Nomes dos meses em português
+    portuguese_month_names = [
+        '', 'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+        'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+    ]
+    
     # Obtém os dados do resumo
     summary = get_month_summary(request.user, year, month)
     
@@ -254,7 +259,7 @@ def dashboard(request):
         'summary': summary,
         'category_totals': category_totals,
         'daily_balance': daily_balance,
-        'month_name': calendar.month_name[month],
+        'month_name': portuguese_month_names[month],
         'year': year,
     }
     
