@@ -1,9 +1,9 @@
 """
-ASGI config for finance_control project.
+Configuração ASGI para o projeto finance_control.
 
-It exposes the ASGI callable as a module-level variable named ``application``.
+Expõe o callable ASGI como uma variável de nível de módulo chamada ``application``.
 
-For more information on this file, see
+Para mais informações sobre este arquivo, veja
 https://docs.djangoproject.com/en/5.2/howto/deployment/asgi/
 """
 

@@ -37,7 +37,7 @@ class TransactionItemForm(forms.ModelForm):
         return amount
 
 
-# Create the inline formset for TransactionItem
+# Cria o formset inline para TransactionItem
 TransactionItemFormSet = inlineformset_factory(
     Transaction, 
     TransactionItem, 

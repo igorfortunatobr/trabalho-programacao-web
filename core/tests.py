@@ -148,7 +148,7 @@ class FormValidationTest(TestCase):
     def test_transaction_item_amount_validation(self):
         from .forms import TransactionItemForm
         
-        # Test invalid amount (less than 0.01)
+        # Teste de valor inválido (menor que 0,01)
         form_data = {
             'category': self.category.id,
             'amount': '0.00'
@@ -156,7 +156,7 @@ class FormValidationTest(TestCase):
         form = TransactionItemForm(data=form_data)
         self.assertFalse(form.is_valid())
         
-        # Test valid amount
+        # Teste de valor válido
         form_data = {
             'category': self.category.id,
             'amount': '10.50'
@@ -168,7 +168,7 @@ class FormValidationTest(TestCase):
         from .forms import TransactionForm
         from django.utils import timezone
         
-        # Test future date (should be invalid)
+        # Teste de data futura (deve ser inválida)
         future_date = timezone.now().date() + timezone.timedelta(days=1)
         form_data = {
             'description': 'Transação futura',
@@ -177,7 +177,7 @@ class FormValidationTest(TestCase):
         form = TransactionForm(data=form_data)
         self.assertFalse(form.is_valid())
         
-        # Test current date (should be valid)
+        # Teste de data atual (deve ser válida)
         form_data = {
             'description': 'Transação hoje',
             'date': timezone.now().date()

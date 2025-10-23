@@ -9,21 +9,21 @@ import json
 
 def get_month_summary(user, year, month):
     """
-    Get income, expense and balance for a specific month
+    Obtém receita, despesa e saldo para um mês específico
     """
-    # First day of the month
+    # Primeiro dia do mês
     start_date = timezone.datetime(year, month, 1).date()
-    # Last day of the month
+    # Último dia do mês
     last_day = calendar.monthrange(year, month)[1]
     end_date = timezone.datetime(year, month, last_day).date()
     
-    # Get all transactions for the user in the specified month
+    # Obtém todas as transações do usuário no mês especificado
     transactions = Transaction.objects.filter(
         owner=user,
         date__range=(start_date, end_date)
     )
     
-    # Calculate totals
+    # Calcula os totais
     total_income = Decimal('0.00')
     total_expense = Decimal('0.00')
     
@@ -45,22 +45,22 @@ def get_month_summary(user, year, month):
 
 def get_category_totals(user, year, month):
     """
-    Get totals by category for a specific month
-    Returns a dictionary that can be easily converted to JSON
+    Obtém totais por categoria para um mês específico
+    Retorna um dicionário que pode ser facilmente convertido para JSON
     """
-    # First day of the month
+    # Primeiro dia do mês
     start_date = timezone.datetime(year, month, 1).date()
-    # Last day of the month
+    # Último dia do mês
     last_day = calendar.monthrange(year, month)[1]
     end_date = timezone.datetime(year, month, last_day).date()
     
-    # Get all transaction items for the user in the specified month
+    # Obtém todos os itens de transação do usuário no mês especificado
     transaction_items = TransactionItem.objects.filter(
         transaction__owner=user,
         transaction__date__range=(start_date, end_date)
     ).select_related('category')
     
-    # Group by category
+    # Agrupa por categoria
     category_totals = defaultdict(Decimal)
     
     for item in transaction_items:
@@ -69,7 +69,7 @@ def get_category_totals(user, year, month):
         else:  # EXPENSE
             category_totals[item.category.name] += item.amount
     
-    # Convert to regular dict and float values for JSON serialization
+    # Converte para dict regular e valores float para serialização JSON
     result = {}
     for key, value in category_totals.items():
         result[key] = float(value)
@@ -79,22 +79,22 @@ def get_category_totals(user, year, month):
 
 def get_daily_balance_series(user, year, month):
     """
-    Get daily balance series for a specific month
-    Returns a list that can be easily converted to JSON
+    Obtém a série de saldo diário para um mês específico
+    Retorna uma lista que pode ser facilmente convertida para JSON
     """
-    # First day of the month
+    # Primeiro dia do mês
     start_date = timezone.datetime(year, month, 1).date()
-    # Last day of the month
+    # Último dia do mês
     last_day = calendar.monthrange(year, month)[1]
     end_date = timezone.datetime(year, month, last_day).date()
     
-    # Get all transaction items for the user in the specified month
+    # Obtém todos os itens de transação do usuário no mês especificado
     transaction_items = TransactionItem.objects.filter(
         transaction__owner=user,
         transaction__date__range=(start_date, end_date)
     ).select_related('category', 'transaction')
     
-    # Group by date and calculate daily amounts
+    # Agrupa por data e calcula valores diários
     daily_amounts = defaultdict(Decimal)
     
     for item in transaction_items:
@@ -104,7 +104,7 @@ def get_daily_balance_series(user, year, month):
         else:  # EXPENSE
             daily_amounts[date] -= item.amount
     
-    # Calculate cumulative balance
+    # Calcula o saldo cumulativo
     dates = sorted(daily_amounts.keys())
     balance_series = []
     cumulative_balance = Decimal('0.00')

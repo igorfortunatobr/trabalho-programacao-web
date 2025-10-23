@@ -16,8 +16,8 @@ from django.db.models import Sum, Q
 
 def home(request):
     """
-    View for the home page that redirects to dashboard for authenticated users
-    or to login page for unauthenticated users
+    View para a página inicial que redireciona para o dashboard para usuários autenticados
+    ou para a página de login para usuários não autenticados
     """
     if request.user.is_authenticated:
         return redirect('dashboard')
@@ -68,7 +68,7 @@ class CategoryDeleteView(LoginRequiredMixin, DeleteView):
 
     def delete(self, request, *args, **kwargs):
         category = self.get_object()
-        # Check if category is being used
+        # Verifica se a categoria está sendo usada
         if TransactionItem.objects.filter(category=category).exists():
             messages.error(self.request, 'Não é possível excluir esta categoria pois ela está sendo usada em transações.')
             return redirect('category_list')
@@ -85,12 +85,12 @@ class TransactionListView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         queryset = Transaction.objects.filter(owner=self.request.user)
         
-        # Search by description
+        # Pesquisa por descrição
         search = self.request.GET.get('search')
         if search:
             queryset = queryset.filter(description__icontains=search)
             
-        # Filter by date range
+        # Filtra por intervalo de datas
         start_date = self.request.GET.get('start_date')
         end_date = self.request.GET.get('end_date')
         if start_date:
@@ -98,7 +98,7 @@ class TransactionListView(LoginRequiredMixin, ListView):
         if end_date:
             queryset = queryset.filter(date__lte=end_date)
             
-        # Filter by type (income/expense)
+        # Filtra por tipo (receita/despesa)
         transaction_type = self.request.GET.get('type')
         if transaction_type:
             if transaction_type == 'INCOME':
@@ -126,25 +126,25 @@ class TransactionCreateView(LoginRequiredMixin, CreateView):
         context = self.get_context_data()
         formset = context['formset']
         
-        # Check if formset is valid and has at least one item
+        # Verifica se o formset é válido e tem pelo menos um item
         if formset.is_valid():
-            # Check if at least one item is filled
+            # Verifica se pelo menos um item está preenchido
             has_items = any(formset.cleaned_data for form in formset if form.cleaned_data and not form.cleaned_data.get('DELETE', False))
             if not has_items:
                 form.add_error(None, 'É necessário adicionar pelo menos um item à transação.')
                 return self.form_invalid(form)
             
-            # Save transaction and items
+            # Salva transação e itens
             with transaction.atomic():
                 self.object = form.save(commit=False)
                 self.object.owner = self.request.user
                 self.object.save()
                 
-                # Save formset
+                # Salva formset
                 formset.instance = self.object
                 formset.save()
                 
-                # Calculate total amount
+                # Calcula o valor total
                 total = 0
                 for item in self.object.items.all():
                     if item.category.type == 'INCOME':
@@ -180,23 +180,23 @@ class TransactionUpdateView(LoginRequiredMixin, UpdateView):
         context = self.get_context_data()
         formset = context['formset']
         
-        # Check if formset is valid
+        # Verifica se o formset é válido
         if formset.is_valid():
-            # Check if at least one item is filled
+            # Verifica se pelo menos um item está preenchido
             has_items = any(formset.cleaned_data for form in formset if form.cleaned_data and not form.cleaned_data.get('DELETE', False))
             if not has_items:
                 form.add_error(None, 'É necessário adicionar pelo menos um item à transação.')
                 return self.form_invalid(form)
             
-            # Save transaction and items
+            # Salva transação e itens
             with transaction.atomic():
                 self.object = form.save()
                 
-                # Save formset
+                # Salva formset
                 formset.instance = self.object
                 formset.save()
                 
-                # Calculate total amount
+                # Calcula o valor total
                 total = 0
                 for item in self.object.items.all():
                     if item.category.type == 'INCOME':
@@ -236,18 +236,18 @@ class TransactionDeleteView(LoginRequiredMixin, DeleteView):
 
 @login_required
 def dashboard(request):
-    # Get current month and year
+    # Obtém o mês e ano atual
     today = timezone.now().date()
     year = today.year
     month = today.month
     
-    # Get summary data
+    # Obtém os dados do resumo
     summary = get_month_summary(request.user, year, month)
     
-    # Get category totals
+    # Obtém os totais por categoria
     category_totals = get_category_totals(request.user, year, month)
     
-    # Get daily balance series
+    # Obtém a série de saldo diário
     daily_balance = get_daily_balance_series(request.user, year, month)
     
     context = {
