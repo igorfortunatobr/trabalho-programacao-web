@@ -89,27 +89,35 @@ Sistema de controle financeiro pessoal desenvolvido com Django, permitindo o ger
 
 ```mermaid
 erDiagram
-    User ||--o{ Transaction : has
-    Transaction ||--o{ TransactionItem : contains
-    Category ||--o{ TransactionItem : classifies
+    USER ||--o{ TRANSACTION : "realiza"
+    TRANSACTION ||--o{ TRANSACTION_ITEM : "possui"
+    CATEGORY ||--o{ TRANSACTION_ITEM : "classifica"
 
-    User {
+    USER {
+        int id PK
         string username
         string email
     }
 
-    Category {
+    CATEGORY {
+        int id PK
+        int user_id FK
         string name
-        string type
+        string type 
     }
 
-    Transaction {
+    TRANSACTION {
+        int id PK
+        int user_id FK
         string description
         date date
         decimal total_amount
     }
 
-    TransactionItem {
+    TRANSACTION_ITEM {
+        int id PK
+        int transaction_id FK
+        int category_id FK
         decimal amount
     }
 ```
