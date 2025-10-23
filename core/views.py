@@ -31,7 +31,7 @@ class CategoryListView(LoginRequiredMixin, ListView):
     paginate_by = 20
 
     def get_queryset(self):
-        queryset = Category.objects.all()
+        queryset = Category.objects.filter(user=self.request.user)
         search = self.request.GET.get('search')
         if search:
             queryset = queryset.filter(name__icontains=search)
@@ -45,6 +45,7 @@ class CategoryCreateView(LoginRequiredMixin, CreateView):
     success_url = reverse_lazy('category_list')
 
     def form_valid(self, form):
+        form.instance.user = self.request.user
         messages.success(self.request, 'Categoria criada com sucesso!')
         return super().form_valid(form)
 
@@ -55,6 +56,9 @@ class CategoryUpdateView(LoginRequiredMixin, UpdateView):
     fields = ['name', 'type']
     success_url = reverse_lazy('category_list')
 
+    def get_queryset(self):
+        return Category.objects.filter(user=self.request.user)
+
     def form_valid(self, form):
         messages.success(self.request, 'Categoria atualizada com sucesso!')
         return super().form_valid(form)
@@ -64,6 +68,9 @@ class CategoryDeleteView(LoginRequiredMixin, DeleteView):
     model = Category
     template_name = 'core/category_confirm_delete.html'
     success_url = reverse_lazy('category_list')
+
+    def get_queryset(self):
+        return Category.objects.filter(user=self.request.user)
 
     def delete(self, request, *args, **kwargs):
         category = self.get_object()

@@ -14,13 +14,15 @@ class Category(models.Model):
 
     name = models.CharField(max_length=100, unique=True)
     type = models.CharField(max_length=10, choices=CATEGORY_TYPES)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def __str__(self):
-        return self.name
+        return str(self.name)
 
     class Meta:
         verbose_name = 'Categoria'
         verbose_name_plural = 'Categorias'
+        unique_together = ('user', 'name')  # Ensures category names are unique per user
 
 
 class Transaction(models.Model):

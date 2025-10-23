@@ -22,6 +22,7 @@ class Migration(migrations.Migration):
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(max_length=100, unique=True)),
                 ('type', models.CharField(choices=[('INCOME', 'Receita'), ('EXPENSE', 'Despesa')], max_length=10)),
+                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
             ],
             options={
                 'verbose_name': 'Categoria',
@@ -54,5 +55,9 @@ class Migration(migrations.Migration):
                 'verbose_name': 'Item de Transação',
                 'verbose_name_plural': 'Itens de Transação',
             },
+        ),
+        migrations.AddConstraint(
+            model_name='category',
+            constraint=models.UniqueConstraint(fields=('user', 'name'), name='core_category_user_name_unique'),
         ),
     ]
