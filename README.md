@@ -55,6 +55,13 @@ Sistema de controle financeiro pessoal desenvolvido com Django, permitindo o ger
    pip install -r requirements.txt
    ```
 
+   ```bash
+   python -m pip install weasyprint
+   ```
+   ```bash
+   python -m pip install reportlab
+   ```
+
 4. **Executar as migrações:**
 
    ```bash
