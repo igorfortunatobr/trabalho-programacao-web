@@ -44,6 +44,7 @@ class Command(BaseCommand):
         for cat_data in categories_data:
             category, created = Category.objects.get_or_create(
                 name=cat_data['name'],
+                user=user,
                 defaults={'type': cat_data['type']}
             )
             categories.append(category)
