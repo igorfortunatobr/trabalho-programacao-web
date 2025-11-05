@@ -61,80 +61,101 @@
     </div>
 </div>
 
+{{ category_totals|json_script:"category-data" }}
+{{ daily_balance|json_script:"daily-data" }}
+
 <script>
-    // Prepare data for charts
-    // Convert Python data to JavaScript
-    const categoryData = JSON.parse('{{ category_totals|escapejs }}');
-    const dailyData = JSON.parse('{{ daily_balance|escapejs }}');
-    
-    // Extract labels and values for category chart
-    const categoryLabels = Object.keys(categoryData);
-    const categoryValues = Object.values(categoryData);
-    
-    // Extract dates and balances for daily balance chart
-    const dailyDates = dailyData.map(item => item.date);
-    const dailyBalances = dailyData.map(item => item.balance);
+document.addEventListener('DOMContentLoaded', () => {
+  const catEl = document.getElementById("category-data");
+  const dayEl = document.getElementById("daily-data");
+  if (!catEl || !dayEl) return;
 
-    // Category Chart
-    const categoryCtx = document.getElementById('categoryChart').getContext('2d');
-    const categoryChart = new Chart(categoryCtx, {
-        type: 'bar',
-        data: {
-            labels: categoryLabels,
-            datasets: [{
-                label: 'Valor',
-                data: categoryValues,
-                backgroundColor: [
-                    'rgba(255, 99, 132, 0.2)',
-                    'rgba(54, 162, 235, 0.2)',
-                    'rgba(255, 205, 86, 0.2)',
-                    'rgba(75, 192, 192, 0.2)',
-                    'rgba(153, 102, 255, 0.2)',
-                    'rgba(255, 159, 64, 0.2)'
-                ],
-                borderColor: [
-                    'rgb(255, 99, 132)',
-                    'rgb(54, 162, 235)',
-                    'rgb(255, 205, 86)',
-                    'rgb(75, 192, 192)',
-                    'rgb(153, 102, 255)',
-                    'rgb(255, 159, 64)'
-                ],
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            scales: {
-                y: {
-                    beginAtZero: true
-                }
-            }
-        }
-    });
+  const categoryData = JSON.parse(catEl.textContent || "{}");
+  const dailyData = JSON.parse(dayEl.textContent || "[]");
 
-    // Daily Balance Chart
-    const dailyBalanceCtx = document.getElementById('dailyBalanceChart').getContext('2d');
-    const dailyBalanceChart = new Chart(dailyBalanceCtx, {
-        type: 'line',
-        data: {
-            labels: dailyDates,
-            datasets: [{
-                label: 'Saldo Acumulado',
-                data: dailyBalances,
-                fill: false,
-                borderColor: 'rgb(75, 192, 192)',
-                tension: 0.1
-            }]
+  const categoryLabels = Object.keys(categoryData);
+  const categoryValues = Object.values(categoryData);
+
+  // Ordena por data (se já não vier ordenado)
+  dailyData.sort((a, b) => a.date.localeCompare(b.date));
+  const dailyDates = dailyData.map(i => i.date);
+  const dailyBalances = dailyData.map(i => i.balance);
+
+  // Cores dinâmicas suficientes p/ qualquer nº de categorias
+  const palette = [
+    'rgba(255,99,132,0.2)','rgba(54,162,235,0.2)','rgba(255,205,86,0.2)',
+    'rgba(75,192,192,0.2)','rgba(153,102,255,0.2)','rgba(255,159,64,0.2)'
+  ];
+  const paletteBorder = [
+    'rgb(255,99,132)','rgb(54,162,235)','rgb(255,205,86)',
+    'rgb(75,192,192)','rgb(153,102,255)','rgb(255,159,64)'
+  ];
+  const bg = categoryLabels.map((_, i) => palette[i % palette.length]);
+  const bd = categoryLabels.map((_, i) => paletteBorder[i % paletteBorder.length]);
+
+  // Category Chart
+  const catCanvas = document.getElementById('categoryChart');
+  if (catCanvas) {
+    const ctx = catCanvas.getContext('2d');
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: categoryLabels,
+        datasets: [{
+          label: 'Valor',
+          data: categoryValues,
+          backgroundColor: bg,
+          borderColor: bd,
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: { callback: v => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) }
+          }
         },
-        options: {
-            responsive: true,
-            scales: {
-                y: {
-                    beginAtZero: true
-                }
+        plugins: {
+          tooltip: {
+            callbacks: {
+              label: ctx => (ctx.parsed.y)
+                .toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
             }
+          }
         }
+      }
     });
+  }
+
+  // Daily Balance Chart
+  const dailyCanvas = document.getElementById('dailyBalanceChart');
+  if (dailyCanvas) {
+    const ctx2 = dailyCanvas.getContext('2d');
+    new Chart(ctx2, {
+      type: 'line',
+      data: {
+        labels: dailyDates,
+        datasets: [{
+          label: 'Saldo Acumulado',
+          data: dailyBalances,
+          fill: false,
+          borderColor: 'rgb(75, 192, 192)',
+          tension: 0.1
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: { callback: v => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) }
+          }
+        }
+      }
+    });
+  }
+});
 </script>
 {% endblock %}

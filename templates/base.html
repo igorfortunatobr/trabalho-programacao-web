@@ -19,15 +19,28 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'dashboard' %}">Dashboard</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'transaction_list' %}">Transações</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'category_list' %}">Categorias</a>
-                    </li>
+                    {% if user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'dashboard' %}">Dashboard</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'transaction_list' %}">Transações</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'category_list' %}">Categorias</a>
+                        </li>
+                        <!-- Relatórios Dropdown -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="reportsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Relatórios
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="reportsDropdown">
+                                <li><a class="dropdown-item" href="{% url 'report_transactions' %}">Relatório de Transações</a></li>
+                                <li><a class="dropdown-item" href="{% url 'report_transactions_by_category' %}">Transações por Categoria</a></li>
+                                <li><a class="dropdown-item" href="{% url 'report_transactions_by_month' %}">Transações por Mês</a></li>
+                            </ul>
+                        </li>
+                    {% endif %}
                 </ul>
                 <ul class="navbar-nav">
                     {% if user.is_authenticated %}
