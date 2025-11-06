@@ -22,6 +22,11 @@ urlpatterns = [
     path('transactions/<int:pk>/edit/', views.TransactionUpdateView.as_view(), name='transaction_update'),
     path('transactions/<int:pk>/delete/', views.TransactionDeleteView.as_view(), name='transaction_delete'),
     
+    # Relatórios
+    path('reports/transactions/', views.report_transactions, name='report_transactions'),
+    path('reports/transactions-by-category/', views.report_transactions_by_category, name='report_transactions_by_category'),
+    path('reports/transactions-by-month/', views.report_transactions_by_month, name='report_transactions_by_month'),
+    
     # Registro
     path('accounts/signup/', SignUpView.as_view(), name='signup'),
 ]
